@@ -1,5 +1,8 @@
 package com.ist.leave_management_system.service;
 
+import com.ist.leave_management_system.config.JwtUtils;
+import com.ist.leave_management_system.dto.LoginResponse;
+import com.ist.leave_management_system.dto.RegisterRequest;
 import com.ist.leave_management_system.model.Employee;
 import com.ist.leave_management_system.model.UserRole;
 import com.ist.leave_management_system.repository.EmployeeRepository;
@@ -20,24 +23,43 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Employee registerUser(Employee user, String roleName) {
-        UserRole role = userRoleRepository.findByRoleName(roleName);
-        if (role == null) {
-            throw new RuntimeException("Role not found: " + roleName);
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    public Employee registerUser(RegisterRequest request) {
+        // Check if email already exists
+        if (employeeRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email is already taken");
         }
-        user.setRole(role);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Check if role exists
+        UserRole role = userRoleRepository.findByRoleName(request.getRoleName());
+        if (role == null) {
+            throw new RuntimeException("Role not found: " + request.getRoleName());
+        }
+
+        // Create the new user
+        Employee user = Employee.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .profilePictureUrl(request.getProfilePictureUrl())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(role)
+                .build();
+
         return employeeRepository.save(user);
     }
 
-    public Employee loginUser(String email, String password) {
+    public LoginResponse loginUser(String email, String password) {
         Employee user = employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (passwordEncoder.matches(password, user.getPassword())) {
-            return user;
-        } else {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
+
+        String token = jwtUtils.generateToken(user.getEmail());
+        return new LoginResponse(token, user.getEmail(), user.getRole().getRoleName());
     }
 }

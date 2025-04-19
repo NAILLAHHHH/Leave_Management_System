@@ -34,7 +34,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/leaves/*/approve",
                     "/api/leaves/*/reject",
-                    "/api/leaves/pending-approval"
+                    "/api/leaves/pending-approval",
+                    "/api/leaves/fix-balances"
                 ).hasRole("ADMIN")
                 
                 // Employee endpoints

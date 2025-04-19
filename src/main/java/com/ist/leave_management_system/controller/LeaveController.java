@@ -2,7 +2,9 @@ package com.ist.leave_management_system.controller;
 
 import com.ist.leave_management_system.dto.LeaveRequestDTO;
 import com.ist.leave_management_system.dto.LeaveResponseDTO;
+import com.ist.leave_management_system.model.Employee;
 import com.ist.leave_management_system.model.LeaveStatus;
+import com.ist.leave_management_system.repository.EmployeeRepository;
 import com.ist.leave_management_system.service.LeaveService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.List;
 public class LeaveController {
 
     private final LeaveService leaveService;
+    private final EmployeeRepository employeeRepository;
 
     @PostMapping
     public ResponseEntity<LeaveResponseDTO> applyForLeave(
@@ -81,5 +84,24 @@ public class LeaveController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<LeaveResponseDTO>> getAllLeaves() {
         return ResponseEntity.ok(leaveService.getAllLeaves());
+    }
+
+    @PostMapping("/fix-balances")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> fixLeaveBalances() {
+        List<Employee> employees = employeeRepository.findAll();
+        int fixedCount = 0;
+        
+        for (Employee employee : employees) {
+            try {
+                leaveService.initializeLeaveBalancesForEmployee(employee);
+                fixedCount++;
+            } catch (Exception e) {
+                // Log error but continue with other employees
+                System.err.println("Error fixing balance for employee " + employee.getEmail() + ": " + e.getMessage());
+            }
+        }
+        
+        return ResponseEntity.ok("Fixed leave balances for " + fixedCount + " employees");
     }
 } 

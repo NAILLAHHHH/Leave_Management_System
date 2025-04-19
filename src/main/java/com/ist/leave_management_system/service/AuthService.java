@@ -27,6 +27,9 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private LeaveService leaveService;
+
     public Employee registerUser(RegisterRequest request) {
         // Check if email already exists
         if (employeeRepository.existsByEmail(request.getEmail())) {
@@ -49,7 +52,12 @@ public class AuthService {
                 .role(role)
                 .build();
 
-        return employeeRepository.save(user);
+        Employee savedEmployee = employeeRepository.save(user);
+        
+        // Initialize leave balances for the new employee
+        leaveService.initializeLeaveBalancesForEmployee(savedEmployee);
+        
+        return savedEmployee;
     }
 
     public LoginResponse loginUser(String email, String password) {

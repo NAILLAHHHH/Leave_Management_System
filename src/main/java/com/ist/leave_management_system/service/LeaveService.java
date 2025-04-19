@@ -2,6 +2,7 @@ package com.ist.leave_management_system.service;
 
 import com.ist.leave_management_system.dto.LeaveRequestDTO;
 import com.ist.leave_management_system.dto.LeaveResponseDTO;
+import com.ist.leave_management_system.model.Employee;
 import com.ist.leave_management_system.model.LeaveStatus;
 
 import java.util.List;
@@ -17,4 +18,5 @@ public interface LeaveService {
     List<LeaveResponseDTO> getLeavesByStatus(LeaveStatus status);
     List<LeaveResponseDTO> getAllLeaves();
     List<LeaveResponseDTO> getPendingLeavesForApproval();
+    void initializeLeaveBalancesForEmployee(Employee employee);
 } 

@@ -317,6 +317,37 @@ public class LeaveServiceImpl implements LeaveService {
         }
     }
 
+    @Transactional
+    public void initializeLeaveBalancesForEmployee(Employee employee) {
+        int currentYear = LocalDate.now().getYear();
+        List<LeaveType> allLeaveTypes = leaveTypeRepository.findAll();
+        
+        for (LeaveType leaveType : allLeaveTypes) {
+            // Check if balance already exists
+            Optional<LeaveBalance> existingBalance = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeEntityAndYear(
+                employee.getId(), leaveType, currentYear);
+                
+            if (existingBalance.isPresent()) {
+                continue; // Skip if balance already exists
+            }
+            
+            // Create new balance
+            LeaveBalance newBalance = new LeaveBalance();
+            newBalance.setEmployee(employee);
+            newBalance.setLeaveTypeEntity(leaveType);
+            newBalance.setLeaveType(leaveType.getName());
+            newBalance.setYear(currentYear);
+            newBalance.setTotalDays(leaveType.getMaxDaysPerYear());
+            newBalance.setUsedDays(0.0);
+            newBalance.setPendingDays(0.0);
+            newBalance.setRemainingDays(leaveType.getMaxDaysPerYear());
+            newBalance.setCarriedForwardDays(0.0);
+            newBalance.setCreatedAt(LocalDateTime.now());
+            
+            leaveBalanceRepository.save(newBalance);
+        }
+    }
+
     private double calculateRequestedDays(LeaveRequestDTO leaveRequest) {
         if (leaveRequest.isHalfDay()) {
             return 0.5;

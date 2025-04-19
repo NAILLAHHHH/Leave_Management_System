@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 // import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -47,5 +49,18 @@ public class AuthController {
     public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.loginUser(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get the current authenticated user's information
+     * 
+     * @return the authenticated Employee
+     */
+    @GetMapping("/me")
+    public ResponseEntity<Employee> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Employee employee = authService.findByEmail(email);
+        return ResponseEntity.ok(employee);
     }
 }

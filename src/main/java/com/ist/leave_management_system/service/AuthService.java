@@ -10,6 +10,7 @@ import com.ist.leave_management_system.repository.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Service
 public class AuthService {
@@ -62,4 +63,15 @@ public class AuthService {
         String token = jwtUtils.generateToken(user.getEmail());
         return new LoginResponse(token, user.getEmail(), user.getRole().getRoleName());
     }
+
+    /**
+ * Find an employee by email
+ * 
+ * @param email the email to search for
+ * @return the found Employee
+ */
+public Employee findByEmail(String email) {
+    return employeeRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+}
 }

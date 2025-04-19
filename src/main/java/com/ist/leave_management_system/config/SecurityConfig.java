@@ -32,7 +32,6 @@ public class SecurityConfig {
                 
                 // Admin-only endpoints
                 .requestMatchers(
-                    "/api/leave-types/**",
                     "/api/leaves/*/approve",
                     "/api/leaves/*/reject",
                     "/api/leaves/pending-approval"
@@ -41,6 +40,7 @@ public class SecurityConfig {
                 // Employee endpoints
                 .requestMatchers(
                     "/api/leaves",
+                    "/api/leave-types/**",
                     "/api/leaves/my-leaves",
                     "/api/leaves/*/cancel",
                     "/api/leaves/status/*"

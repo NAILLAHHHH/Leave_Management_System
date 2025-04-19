@@ -26,13 +26,13 @@ public class LeaveTypeController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<List<LeaveType>> getAllLeaveTypes() {
         return ResponseEntity.ok(leaveTypeService.getAllLeaveTypes());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<LeaveType> getLeaveTypeById(@PathVariable Long id) {
         return ResponseEntity.ok(leaveTypeService.getLeaveTypeById(id));
     }
@@ -53,7 +53,7 @@ public class LeaveTypeController {
     }
 
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<Map<String, Object>>> listAllLeaveTypes() {
         List<LeaveType> leaveTypes = leaveTypeService.getAllLeaveTypes();
         List<Map<String, Object>> response = leaveTypes.stream()

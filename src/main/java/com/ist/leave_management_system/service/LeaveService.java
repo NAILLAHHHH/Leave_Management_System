@@ -19,4 +19,5 @@ public interface LeaveService {
     List<LeaveResponseDTO> getAllLeaves();
     List<LeaveResponseDTO> getPendingLeavesForApproval();
     void initializeLeaveBalancesForEmployee(Employee employee);
+    List<LeaveResponseDTO> getLeavesByEmployeeId(Long employeeId);
 } 

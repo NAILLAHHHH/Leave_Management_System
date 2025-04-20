@@ -86,6 +86,12 @@ public class LeaveController {
         return ResponseEntity.ok(leaveService.getAllLeaves());
     }
 
+    @GetMapping("/employee/{employeeId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<LeaveResponseDTO>> getLeavesByEmployeeId(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(leaveService.getLeavesByEmployeeId(employeeId));
+    }
+
     @PostMapping("/fix-balances")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> fixLeaveBalances() {

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class LeaveServiceImpl implements LeaveService {
 
     private final LeaveRepository leaveRepository;

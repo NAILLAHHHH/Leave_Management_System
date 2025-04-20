@@ -1,5 +1,5 @@
-package com.ist.leave_management_system.repository;
+// package com.ist.leave_management_system.repository;
 
-public class LeaveRequestRepository {
+// public class LeaveRequestRepository {
     
-}
+// }

@@ -61,13 +61,28 @@ public class LeaveServiceImpl implements LeaveService {
             LeaveBalance leaveBalance = getOrCreateLeaveBalance(employee, leaveType);
             double requestedDays = calculateRequestedDays(leaveRequest);
             
-            // Check against available days (remaining - pending)
-            if (leaveBalance.getAvailableDays() < requestedDays) {
+            // Check against remaining days
+            if (leaveBalance.getRemainingDays() < requestedDays) {
                 throw new IllegalArgumentException(
-                    String.format("Insufficient leave balance. Available: %.1f, Requested: %.1f, Pending: %.1f", 
-                        leaveBalance.getAvailableDays(), 
-                        requestedDays,
-                        leaveBalance.getPendingDays())
+                    String.format("Insufficient leave balance. Remaining: %.1f, Requested: %.1f", 
+                        leaveBalance.getRemainingDays(), 
+                        requestedDays)
+                );
+            }
+
+            // Check for overlapping pending requests
+            List<Leave> pendingLeaves = leaveRepository.findByEmployeeIdAndStatus(employee.getId(), LeaveStatus.PENDING);
+            double totalPendingDays = pendingLeaves.stream()
+                .filter(l -> l.getLeaveType().equals(leaveType))
+                .mapToDouble(this::calculateRequestedDays)
+                .sum();
+
+            if (leaveBalance.getRemainingDays() < (totalPendingDays + requestedDays)) {
+                throw new IllegalArgumentException(
+                    String.format("Insufficient leave balance when considering pending requests. Remaining: %.1f, Pending: %.1f, New Request: %.1f", 
+                        leaveBalance.getRemainingDays(),
+                        totalPendingDays,
+                        requestedDays)
                 );
             }
 

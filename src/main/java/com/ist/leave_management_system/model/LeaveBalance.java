@@ -72,6 +72,6 @@ public class LeaveBalance {
     }
 
     public double getAvailableDays() {
-        return this.remainingDays - this.pendingDays;
+        return this.remainingDays;
     }
 } 

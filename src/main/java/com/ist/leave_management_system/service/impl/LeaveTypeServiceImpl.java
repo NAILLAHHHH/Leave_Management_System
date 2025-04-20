@@ -27,6 +27,12 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
             throw new IllegalArgumentException("Max days per year must be a positive number");
         }
 
+        // Set default values for PTO
+        if ("PTO".equalsIgnoreCase(leaveType.getName())) {
+            leaveType.setMaxDaysPerYear(20); // Standard PTO entitlement
+            leaveType.setRequiresDocument(false);
+        }
+
         System.out.println("Creating leave type with name: " + leaveType.getName());
         leaveType.setCreatedAt(LocalDateTime.now());
         LeaveType savedType = leaveTypeRepository.save(leaveType);

@@ -45,7 +45,8 @@ public class SecurityConfig {
                     "/api/leaves/my-leaves",
                     "/api/leaves/*/cancel",
                     "/api/leaves/status/*",
-                    "/api/leaves/employee/*"
+                    "/api/leaves/employee/*",
+                    "/api/leaves/current"
                 ).hasAnyRole("ADMIN", "STAFF")
                 
                 // All other requests need to be authenticated

@@ -86,6 +86,12 @@ public class LeaveController {
         return ResponseEntity.ok(leaveService.getAllLeaves());
     }
 
+    @GetMapping("/current")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<List<LeaveResponseDTO>> getEmployeesCurrentlyOnLeave() {
+        return ResponseEntity.ok(leaveService.getEmployeesCurrentlyOnLeave());
+    }
+
     @GetMapping("/employee/{employeeId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<LeaveResponseDTO>> getLeavesByEmployeeId(@PathVariable Long employeeId) {

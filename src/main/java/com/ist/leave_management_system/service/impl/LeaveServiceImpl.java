@@ -397,4 +397,17 @@ public class LeaveServiceImpl implements LeaveService {
         dto.setUpdatedAt(leave.getUpdatedAt());
         return dto;
     }
+
+    @Override
+    public List<LeaveResponseDTO> getEmployeesCurrentlyOnLeave() {
+        LocalDate today = LocalDate.now();
+        List<Leave> currentLeaves = leaveRepository.findByStatus(LeaveStatus.APPROVED)
+            .stream()
+            .filter(leave -> !leave.getStartDate().isAfter(today) && !leave.getEndDate().isBefore(today))
+            .collect(Collectors.toList());
+            
+        return currentLeaves.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
 } 

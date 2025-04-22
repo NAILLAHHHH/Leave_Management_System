@@ -73,13 +73,21 @@ public class AuthService {
     }
 
     /**
- * Find an employee by email
- * 
- * @param email the email to search for
- * @return the found Employee
- */
-public Employee findByEmail(String email) {
-    return employeeRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-}
+     * Find an employee by email
+     * 
+     * @param email the email to search for
+     * @return the found Employee
+     */
+    public Employee findByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+    public String generateToken(Employee employee) {
+        return jwtUtils.generateToken(employee.getEmail());
+    }
+
+    public Employee saveEmployee(Employee employee) {
+        return employeeRepository.save(employee);
+    }
 }

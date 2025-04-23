@@ -56,14 +56,26 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
                 logger.info("Processing OAuth2 user with attributes: {}", oauth2User.getAttributes());
                  // Log each attribute for clarity
-            oauth2User.getAttributes().forEach((key, value) -> 
-            logger.info("OAuth2 attribute in success handler - {}: {}", key, value));
+                oauth2User.getAttributes().forEach((key, value) -> 
+                logger.info("OAuth2 attribute in success handler - {}: {}", key, value));
                 employee = processOAuth2PostLogin(oauth2User);
             } else {
                 throw new RuntimeException("Unsupported authentication type: " + authentication.getPrincipal().getClass());
             }
 
-            String token = jwtUtils.generateToken(employee.getId());
+            String token;
+            try {
+                // Before generating token
+                logger.info("Employee details: id={}, email={}, role={}", 
+                    employee.getId(), 
+                    employee.getEmail(), 
+                    employee.getRole() != null ? employee.getRole().getRoleName() : "null");
+                token = jwtUtils.generateToken(employee.getId(), employee.getRole().getRoleName());
+            } catch (Exception e) {
+                logger.error("Error generating token: ", e);
+                throw e;
+            }
+            
             logger.info("Generated JWT token for user: {}", employee.getId());
             
             response.setHeader("Authorization", "Bearer " + token);
@@ -103,31 +115,24 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private Employee processOAuth2PostLogin(OAuth2User oauth2User) {
         Map<String, Object> attributes = oauth2User.getAttributes();
+        final String email = (String) attributes.get("mail") != null ? 
+            (String) attributes.get("mail") : 
+            (String) attributes.get("userPrincipalName");
         
-        // Try to get the email in order of preference
-        final String email;
-        if (attributes.get("mail") != null) {
-            email = (String) attributes.get("mail");
-        } else if (attributes.get("userPrincipalName") != null) {
-            email = (String) attributes.get("userPrincipalName");
-        } else if (attributes.get("email") != null) {
-            email = (String) attributes.get("email");
-        } else {
-            throw new RuntimeException("No email found in OAuth2 user info");
+        if (email == null) {
+            logger.error("Email not found in OAuth2 user attributes");
+            throw new RuntimeException("Email not found in OAuth2 user info");
         }
-        
-        // Get name fields with fallbacks
-        String givenName = attributes.get("givenName") != null ? 
-            (String) attributes.get("givenName") : 
-            (attributes.get("displayName") != null ? (String) attributes.get("displayName") : "");
-        
-        String surname = attributes.get("surname") != null ? 
-            (String) attributes.get("surname") : "";
+
+        String givenName = (String) attributes.get("givenName");
+        String surname = (String) attributes.get("surname");
         
         logger.info("Looking up employee with email: {}", email);
         return employeeRepository.findByEmail(email)
                 .orElseGet(() -> createNewEmployee(email, givenName, surname));
     }
+
+
     private Employee createNewEmployee(String email, String firstName, String lastName) {
         UserRole staffRole = userRoleRepository.findByRoleName("STAFF");
         if (staffRole == null) {
@@ -150,4 +155,4 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         logger.info("Saving new employee: {}", employee.getEmail());
         return employeeRepository.save(employee);
     }
-} 
+}

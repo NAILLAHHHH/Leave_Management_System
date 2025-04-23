@@ -68,18 +68,18 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        String token = jwtUtils.generateToken(user.getId());
+        String token = jwtUtils.generateToken(user.getEmail());
         return new LoginResponse(token, user.getEmail(), user.getRole().getRoleName());
     }
 
     /**
-     * Find an employee by email
-     * 
-     * @param email the email to search for
-     * @return the found Employee
-     */
-    public Employee findByEmail(String email) {
-        return employeeRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-    }
+ * Find an employee by email
+ * 
+ * @param email the email to search for
+ * @return the found Employee
+ */
+public Employee findByEmail(String email) {
+    return employeeRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+}
 }

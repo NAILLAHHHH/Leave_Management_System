@@ -107,59 +107,41 @@ public class SecurityConfig {
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
         final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
 
-    logger.error("OAUTH2 USER SERVICE CALLED - THIS SHOULD BE VISIBLE");
-    
         return userRequest -> {
-            try {
-                logger.info("Starting OAuth2 user loading process");
-                OAuth2User oAuth2User = delegate.loadUser(userRequest);
-                logger.info("Successfully loaded OAuth2 user");
-                
-                // Force all attributes to be logged, even if they're null
-                Map<String, Object> attributes = oAuth2User.getAttributes();
-                for (String key : attributes.keySet()) {
-                    logger.info("OAuth2 attribute: {} = {}", key, attributes.get(key));
-                }
-                
-                // Use a try-catch specifically for the ID extraction
-                String id = null;
-                try {
-                    id = (String) attributes.get("id");
-                    logger.info("Found id attribute: {}", id);
-                } catch (Exception e) {
-                    logger.error("Error extracting id attribute", e);
-                }
-                
-                if (id == null) {
-                    logger.warn("ID is null, trying fallback attributes");
-                    // Try other common identifiers
-                    String[] possibleIds = {"sub", "oid", "userPrincipalName", "email"};
-                    for (String possibleId : possibleIds) {
-                        if (attributes.containsKey(possibleId)) {
-                            logger.info("Found alternative ID attribute: {} = {}", possibleId, attributes.get(possibleId));
-                            id = (String) attributes.get(possibleId);
-                            attributes.put("id", id); // Add it as "id" for consistency
-                            break;
-                        }
-                    }
-                }
-                
-                if (id == null) {
-                    logger.error("Could not find any ID attribute after trying all alternatives");
-                    throw new OAuth2AuthenticationException("No suitable ID found in user attributes");
-                }
-                
-                logger.info("Using ID: {}", id);
-                
-                return new DefaultOAuth2User(
-                    Collections.emptyList(),
-                    attributes,
-                    "id"  // Use id as the name attribute key
-                );
-            } catch (Exception e) {
-                logger.error("Error in OAuth2UserService", e);
-                throw e;
-            }
+            OAuth2User oAuth2User = delegate.loadUser(userRequest);
+            System.out.println("=============================================");
+            System.out.println("Microsoft Graph API response attributes:");
+            oAuth2User.getAttributes().forEach((key, value) -> 
+                System.out.println(key + ": " + value));
+            System.out.println("=============================================");
+            
+            // logger.debug("Original OAuth2User attributes: {}", oAuth2User.getAttributes());
+
+
+        // Log each attribute individually for better readability
+        oAuth2User.getAttributes().forEach((key, value) -> 
+        logger.info("OAuth2 attribute - {}: {}", key, value));
+            
+            Map<String, Object> attributes = new HashMap<>(oAuth2User.getAttributes());
+            
+            // Get the ID from Azure AD
+               // Use the userPrincipalName as the ID for Microsoft users
+        if (attributes.containsKey("userPrincipalName")) {
+            String email = (String) attributes.get("userPrincipalName");
+            attributes.put("id", email);
+        } else if (attributes.containsKey("mail")) {
+            String email = (String) attributes.get("mail");
+            attributes.put("id", email);
+        } else if (attributes.containsKey("id")) {
+            // id is already present, no need to do anything
+        } else {
+            throw new OAuth2AuthenticationException("No valid ID found in user attributes");
+        }
+            return new DefaultOAuth2User(
+                Collections.emptyList(),
+                attributes,
+                "id"  // Use id as the name attribute key
+            );
         };
     }
 

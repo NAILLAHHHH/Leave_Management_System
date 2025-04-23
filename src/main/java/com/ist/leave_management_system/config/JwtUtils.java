@@ -16,10 +16,9 @@ public class JwtUtils {
     private long jwtExpirationMs;
 
     @SuppressWarnings("deprecation")
-    public String generateToken(Long id, String roleName) {
+    public String generateToken(Long id) {
         return Jwts.builder()
                 .setId(id.toString())
-                .claim("roles", roleName)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)

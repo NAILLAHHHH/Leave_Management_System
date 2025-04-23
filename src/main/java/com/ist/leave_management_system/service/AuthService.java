@@ -68,7 +68,7 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        String token = jwtUtils.generateToken(user.getId(), user.getRole().getRoleName());
+        String token = jwtUtils.generateToken(user.getId());
         return new LoginResponse(token, user.getEmail(), user.getRole().getRoleName());
     }
 

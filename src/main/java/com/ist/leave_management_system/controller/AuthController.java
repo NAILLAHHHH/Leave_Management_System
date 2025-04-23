@@ -7,20 +7,39 @@ import com.ist.leave_management_system.model.Employee;
 import com.ist.leave_management_system.service.AuthService;
 import com.ist.leave_management_system.exception.UserAlreadyExistsException;
 import jakarta.validation.Valid;
-// import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, OAuth2AuthorizedClientService authorizedClientService) {
         this.authService = authService;
+        this.authorizedClientService = authorizedClientService;
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<Map<String, String>> getLoginOptions() {
+        Map<String, String> options = new HashMap<>();
+        options.put("microsoft", "/oauth2/authorization/microsoft");
+        options.put("regular", "/api/auth/login");
+        return ResponseEntity.ok(options);
+    }
+
+    @GetMapping("/success")
+    public ResponseEntity<LoginResponse> handleOAuth2Success(@RequestParam String token) {
+        return ResponseEntity.ok(new LoginResponse(token, null, null));
     }
 
     /**

@@ -10,9 +10,11 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=12345 # Must match POSTGRES_PASSWORD
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
+     
 
   db:
     image: postgres:15

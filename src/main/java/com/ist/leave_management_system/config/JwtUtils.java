@@ -16,9 +16,9 @@ public class JwtUtils {
     private long jwtExpirationMs;
 
     @SuppressWarnings("deprecation")
-    public String generateToken(String email) {
+    public String generateToken(Long id) {
         return Jwts.builder()
-                .setSubject(email)
+                .setId(id.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -26,12 +26,13 @@ public class JwtUtils {
     }
 
     @SuppressWarnings("deprecation")
-    public String getEmailFromToken(String token) {
-        return Jwts.parser()
+    public Long getIdFromToken(String token) {
+        String idString = Jwts.parser()
                 .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();
+                .getId();
+        return Long.parseLong(idString);
     }
 
     @SuppressWarnings("deprecation")

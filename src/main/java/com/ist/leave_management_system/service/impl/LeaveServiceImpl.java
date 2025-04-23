@@ -9,6 +9,7 @@ import com.ist.leave_management_system.repository.LeaveBalanceRepository;
 import com.ist.leave_management_system.repository.LeaveTypeRepository;
 import com.ist.leave_management_system.service.LeaveService;
 import com.ist.leave_management_system.service.EmployeeService;
+import com.ist.leave_management_system.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class LeaveServiceImpl implements LeaveService {
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final EmployeeService employeeService;
     private final LeaveTypeRepository leaveTypeRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -105,6 +107,12 @@ public class LeaveServiceImpl implements LeaveService {
             leaveBalance.setPendingDays(leaveBalance.getPendingDays() + requestedDays);
             leaveBalanceRepository.save(leaveBalance);
             
+            // Send notification to all admins
+            List<Employee> adminEmployees = employeeService.findAdminEmployees();
+            for (Employee admin : adminEmployees) {
+                notificationService.notifyLeaveRequest(savedLeave.getId(), employee, admin);
+            }
+            
             System.out.println("Successfully saved leave request with ID: " + savedLeave.getId());
             System.out.println("Updated leave balance - Pending: " + leaveBalance.getPendingDays() + 
                              ", Available: " + leaveBalance.getAvailableDays());
@@ -146,6 +154,10 @@ public class LeaveServiceImpl implements LeaveService {
         leave.setRejectionReason(null);
 
         Leave updatedLeave = leaveRepository.save(leave);
+        
+        // Notify employee of approval
+        notificationService.notifyLeaveApproval(leaveId, leave.getEmployee());
+        
         return convertToDTO(updatedLeave);
     }
 
@@ -174,6 +186,10 @@ public class LeaveServiceImpl implements LeaveService {
         leave.setRejectionReason(reason);
 
         Leave updatedLeave = leaveRepository.save(leave);
+        
+        // Notify employee of rejection
+        notificationService.notifyLeaveRejection(leaveId, leave.getEmployee(), reason);
+        
         return convertToDTO(updatedLeave);
     }
 
@@ -256,6 +272,8 @@ public class LeaveServiceImpl implements LeaveService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+    
+    @Override
     public List<LeaveResponseDTO> getLeavesByEmployeeId(Long employeeId) {
         List<Leave> leaves = leaveRepository.findByEmployeeId(employeeId);
         return leaves.stream()
@@ -410,4 +428,4 @@ public class LeaveServiceImpl implements LeaveService {
             .map(this::convertToDTO)
             .collect(Collectors.toList());
     }
-} 
+}

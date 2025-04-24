@@ -16,11 +16,11 @@ public class RegisterRequest {
     private String lastName;
 
     @NotBlank(message = "Email is required")
-    @Pattern(
-        regexp = "^[A-Za-z0-9._%+-]+@ist\\.com$", 
-        flags = Pattern.Flag.CASE_INSENSITIVE,
-        message = "Email must be a valid @ist.com address"
-    )
+    // @Pattern(
+    //     regexp = "^[A-Za-z0-9._%+-]+@ist\\.com$", 
+    //     flags = Pattern.Flag.CASE_INSENSITIVE,
+    //     message = "Email must be a valid @ist.com address"
+    // )
     private String email;
 
     private String profilePictureUrl;
